@@ -3,7 +3,9 @@ package it.polito.tdp.gosales;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+import it.polito.tdp.gosales.model.CoppiaA;
 import it.polito.tdp.gosales.model.Model;
+import it.polito.tdp.gosales.model.Retailers;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -31,16 +33,16 @@ public class FXMLController {
     private Button btnSimula;
 
     @FXML
-    private ComboBox<?> cmbAnno;
+    private ComboBox<Integer> cmbAnno;
 
     @FXML
-    private ComboBox<?> cmbNazione;
+    private ComboBox<String> cmbNazione;
 
     @FXML
     private ComboBox<?> cmbProdotto;
 
     @FXML
-    private ComboBox<?> cmbRivenditore;
+    private ComboBox<Retailers> cmbRivenditore;
 
     @FXML
     private TextArea txtArchi;
@@ -62,12 +64,62 @@ public class FXMLController {
 
     @FXML
     void doAnalizzaComponente(ActionEvent event) {
+    	Retailers r = this.cmbRivenditore.getValue();
+    	Integer anno = this.cmbAnno.getValue();
 
+    	if(r == null){
+    		this.txtResult.setText("Inserire un anno nella boxRivenditore!");
+    		return;
+    	}
+    	if(anno == null){
+    		this.txtResult.setText("Inserire un anno nella boxAnno!");
+    		return;
+    	}
+    	int n = model.getNumberOfConnectedComponents(r);
+    	int peso = model.getWeightOfConnectedComponents(r);
+    	this.txtResult.appendText("\nComponente connessa composta da "+n+" vertici e avente peso "+peso);
     }
 
     @FXML
     void doCreaGrafo(ActionEvent event) {
-
+    	Integer anno = this.cmbAnno.getValue();
+    	String nazione = this.cmbNazione.getValue();
+    	String input = this.txtNProdotti.getText();
+    	Integer inputNUM;
+    	if(anno == null){
+    		this.txtResult.setText("Inserire un anno nella boxAnno!");
+    		return;
+    	}
+    	if(nazione == null){
+    		this.txtResult.setText("Inserire una nazione nella boxNazione!");
+    		return;
+    	}
+    	try {
+    		inputNUM = Integer.parseInt(input);
+    		
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Inserire un valore numerico nel campo n");
+    		return;
+    	}
+    	String s = model.creaGrafo(anno, nazione, inputNUM);
+    	this.txtResult.setText(s);
+    	
+    	String vertici = "";
+    	String archi = "";
+    	for(Retailers x : model.getGrafo().vertexSet()) {
+    		vertici += x.getName() + "\n";
+    	}
+    	for(CoppiaA x : model.listArchi()) {
+    		archi += x.getR1() +" <---> "+ x.getR2()+" ("+x.getPeso()+")\n";
+    	}
+    	this.txtVertici.setText(vertici);
+    	this.txtArchi.setText(archi);
+    	this.cmbRivenditore.setDisable(false);
+    	for(Retailers x : model.getGrafo().vertexSet()) {
+    		this.cmbRivenditore.getItems().add(x);
+    	}
+    	this.btnAnalizzaComponente.setDisable(false);
+    	
     }
 
     @FXML
@@ -90,11 +142,16 @@ public class FXMLController {
         assert txtQ != null : "fx:id=\"txtQ\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtResult != null : "fx:id=\"txtResult\" was not injected: check your FXML file 'Scene.fxml'.";
         assert txtVertici != null : "fx:id=\"txtVertici\" was not injected: check your FXML file 'Scene.fxml'.";
-
+        for(int i = 2015; i<=2018; i++) {
+        	this.cmbAnno.getItems().add(i);
+        }
     }
     
     public void setModel(Model model) {
     	this.model = model;
+    	for(String n : model.getAllCountries()) {
+    		this.cmbNazione.getItems().add(n);
+    	}
     }
 
 }

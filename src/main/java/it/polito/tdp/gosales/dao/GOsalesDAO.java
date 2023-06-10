@@ -108,6 +108,92 @@ public class GOsalesDAO {
 			throw new RuntimeException("Error Connection Database");
 		}
 	}
+
+
+	public List<String> getAllCountries() {
+		String query = "SELECT DISTINCT r.Country "
+				+ "FROM go_retailers r ";
+		List<String> result = new ArrayList<String>();
+
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(query);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				String s = rs.getString("Country");
+				result.add(s);
+			}
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+	}
+
+
+	public List<Retailers> getAllRetailers(String nazione) {
+		String query = "SELECT DISTINCT r.* "
+				+ "FROM go_retailers r "
+				+ "WHERE r.Country = ? ";
+		List<Retailers> result = new ArrayList<Retailers>();
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(query);
+			st.setString(1, nazione);
+			ResultSet rs = st.executeQuery();
+
+			while (rs.next()) {
+				result.add(new Retailers(rs.getInt("Retailer_code"), 
+						rs.getString("Retailer_name"),
+						rs.getString("Type"), 
+						rs.getString("Country")));
+			}
+			conn.close();
+			return result;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+		
+	}
+
+
+	public int getPeso(Retailers x, Retailers y, int anno) {
+		String query = "SELECT COUNT(DISTINCT d1.Product_number)AS peso "
+				+ "FROM go_retailers r1, go_retailers r2, go_daily_sales d1, go_daily_sales d2 "
+				+ "WHERE r1.Retailer_code = ? "
+				+ "AND r2.Retailer_code = ? "
+				+ "AND YEAR(d1.Date) = ? "
+				+ "AND YEAR(d2.Date) = ? "
+				+ "AND d1.Retailer_code = r1.Retailer_code "
+				+ "AND d2.Retailer_code = r2.Retailer_code "
+				+ "AND d1.Product_number = d2.Product_number ";
+		int peso = 0;
+		try {
+			Connection conn = DBConnect.getConnection();
+			PreparedStatement st = conn.prepareStatement(query);
+			st.setInt(1, x.getCode());
+			st.setInt(2, y.getCode());
+			st.setInt(3, anno);
+			st.setInt(4, anno);
+			ResultSet rs = st.executeQuery();
+
+			if (rs.first()) {
+				peso = rs.getInt("peso");
+			}
+			conn.close();
+			return peso;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Errore connessione al database");
+			throw new RuntimeException("Error Connection Database");
+		}
+		
+	}
 	
 	
 }
