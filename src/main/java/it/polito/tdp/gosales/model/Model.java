@@ -89,8 +89,15 @@ public class Model {
 				peso += (int)this.grafo.getEdgeWeight(e);
 			}
 		}
-		//restituiamo il risultato (dimensione componente connessa + peso totale)
 		return peso;
+	}
+	
+	public SimResult simula(Retailers r, Products p, int Q, int N, int anno, int nConnessi) {
+		Simulatore sim = new Simulatore(r, anno, p, N, Q, nConnessi );
+		sim.initialize();
+		sim.run();
+		SimResult result = sim.getRisultato();
+		return result;
 	}
 	
 	
@@ -117,6 +124,12 @@ public class Model {
 
 	public void setGrafo(Graph<Retailers, DefaultWeightedEdge> grafo) {
 		this.grafo = grafo;
+	}
+	public List<Products>getAllProducts(Retailers r){
+		return dao.getAllProducts(r);
+	}
+	public List<DailySale>getAllVendite(Products p, Retailers r, int anno){
+		return dao.getAllVendite(p, r, anno);
 	}
 	
 }

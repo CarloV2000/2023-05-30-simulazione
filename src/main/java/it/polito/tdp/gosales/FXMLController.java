@@ -5,7 +5,9 @@ import java.util.ResourceBundle;
 
 import it.polito.tdp.gosales.model.CoppiaA;
 import it.polito.tdp.gosales.model.Model;
+import it.polito.tdp.gosales.model.Products;
 import it.polito.tdp.gosales.model.Retailers;
+import it.polito.tdp.gosales.model.SimResult;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -39,7 +41,7 @@ public class FXMLController {
     private ComboBox<String> cmbNazione;
 
     @FXML
-    private ComboBox<?> cmbProdotto;
+    private ComboBox<Products> cmbProdotto;
 
     @FXML
     private ComboBox<Retailers> cmbRivenditore;
@@ -78,6 +80,12 @@ public class FXMLController {
     	int n = model.getNumberOfConnectedComponents(r);
     	int peso = model.getWeightOfConnectedComponents(r);
     	this.txtResult.appendText("\nComponente connessa composta da "+n+" vertici e avente peso "+peso);
+    	
+    	for(Products x : model.getAllProducts(r)) {
+    		this.cmbProdotto.getItems().add(x);
+    	}
+    	this.cmbProdotto.setDisable(false);
+    	this.btnSimula.setDisable(false);
     }
 
     @FXML
@@ -119,12 +127,45 @@ public class FXMLController {
     		this.cmbRivenditore.getItems().add(x);
     	}
     	this.btnAnalizzaComponente.setDisable(false);
+    	this.txtN.setDisable(false);
+    	this.txtQ.setDisable(false);
     	
     }
 
     @FXML
     void doSimulazione(ActionEvent event) {
-
+    	Products p = this.cmbProdotto.getValue();
+    	Retailers r = this.cmbRivenditore.getValue();
+    	int anno = this.cmbAnno.getValue();
+    	String n = this.txtN.getText();
+    	String q = this.txtQ.getText();
+    	int Nnum;
+    	int Qnum;
+    	int nConnesse;
+    	if(p == null) {
+    		this.txtResult.setText("Inserire un prodotto nella boxProducts");
+    		return;
+    	}
+    	try {
+    		Nnum = Integer.parseInt(n);
+    		
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Inserire un valore numerico nel campo n");
+    		return;
+    	}
+    	try {
+    		Qnum = Integer.parseInt(q);
+    		
+    	}catch(NumberFormatException e) {
+    		this.txtResult.setText("Inserire un valore numerico nel campo q");
+    		return;
+    	}
+    	nConnesse = model.getNumberOfConnectedComponents(r)-1;
+    	SimResult x = model.simula(r, p, Qnum, Nnum, anno, nConnesse);
+    	this.txtResult.setText("CostoTOT = "+x.getCostoTOT());
+    	this.txtResult.appendText("\nRicavoTOT = "+x.getRicavoTOT());
+    	this.txtResult.appendText("\npercentualeSoddisfazione = "+x.getPercentSoddisfatti());
+    	
     }
 
     @FXML
